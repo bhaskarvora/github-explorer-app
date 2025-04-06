@@ -26,12 +26,21 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FollowersScreen(navController: NavController, username: String) {
+    // List of users who follow the given user
     var followers by remember { mutableStateOf<List<Follower>>(emptyList()) }
+
+    //  Holds if any error message from the API call
     var error by remember { mutableStateOf("") }
+
+    // Scope to launch coroutines for data fetching
     var loading by remember { mutableStateOf(true) }
+
+    // State for Swipe-to-Refresh UI
     val scope = rememberCoroutineScope()
+    // State for Swipe-to-Refresh UI
     val refreshState = rememberSwipeRefreshState(isRefreshing = loading)
 
+    //Loads the list of followers from GitHub API
     fun loadFollowers() {
         scope.launch {
             try {
@@ -53,6 +62,8 @@ fun FollowersScreen(navController: NavController, username: String) {
 
     Scaffold(
         topBar = {
+
+            // App bar with back navigation
             TopAppBar(
                 title = { Text("Followers of $username") },
                 navigationIcon = {
@@ -63,11 +74,15 @@ fun FollowersScreen(navController: NavController, username: String) {
             )
         }
     ) { padding ->
+
+        // Pull-to-refresh wrapper for swipe reload
         SwipeRefresh(
             state = refreshState,
             onRefresh = { loadFollowers() }
         ) {
             when {
+
+                // Show error message if API call failed
                 error.isNotEmpty() -> {
                     Box(
                         modifier = Modifier
@@ -79,6 +94,7 @@ fun FollowersScreen(navController: NavController, username: String) {
                     }
                 }
 
+                // loading spinner if data is still being fetched
                 loading && followers.isEmpty() -> {
                     Box(
                         modifier = Modifier
@@ -90,6 +106,7 @@ fun FollowersScreen(navController: NavController, username: String) {
                     }
                 }
 
+                //  Display the list of followers
                 else -> {
                     LazyColumn(modifier = Modifier.padding(padding)) {
                         items(followers) { follower ->
@@ -97,6 +114,8 @@ fun FollowersScreen(navController: NavController, username: String) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
+
+                                        // Navigate to the selected follower's profile
                                         navController.navigate("main/${follower.login}")
                                     }
                                     .padding(8.dp)
